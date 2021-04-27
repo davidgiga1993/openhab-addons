@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config-description:config-descriptions
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:config-description="https://openhab.org/schemas/config-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/config-description/v1.0.0 https://openhab.org/schemas/config-description-1.0.0.xsd">
+
+	<config-description uri="thing-type:homematicip:hmip">
+
+		<parameter-group name="connection">
+			<label>Connection</label>
+			<description>Connection settings.</description>
+		</parameter-group>
+
+		<parameter name="hmipId" type="text" required="true" groupName="connection">
+			<context>text</context>
+			<label>Homematic IP ID</label>
+			<description>ID of the homematic IP device</description>
+		</parameter>
+	</config-description>
+
+</config-description:config-descriptions>

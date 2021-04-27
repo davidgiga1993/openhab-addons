@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="homematicip"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<bridge-type id="bridge" listed="true" extensible="airTemperature">
+		<label>Homematic IP AP</label>
+		<description>Bridge to the HomematicIP server</description>
+		<category>NetworkAppliance</category>
+		<config-description>
+			<parameter name="accessPoint" type="text" required="true">
+				<context>text</context>
+				<label>Access Point</label>
+				<description>ID of the access point (e.g 30FFFFFFF00003D5FFFFF2A5)</description>
+			</parameter>
+			<parameter name="authToken" type="text" required="true">
+				<context>password</context>
+				<label>Auth Token</label>
+				<description>Authorization tokene</description>
+			</parameter>
+			<parameter name="refreshInterval" type="integer" unit="s" min="10">
+				<label>Refresh Interval</label>
+				<description>Interval the device is polled in sec.</description>
+			</parameter>
+		</config-description>
+	</bridge-type>
+
+
+	<thing-type id="thermostat" listed="false">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="bridge"/>
+		</supported-bridge-type-refs>
+
+		<label>Thermostat</label>
+		<description>A thermostat with temperature and humidity sensor</description>
+
+		<channels>
+			<channel id="temperature" typeId="airTemperature"/>
+			<channel id="humidity" typeId="airHumidity"/>
+			<channel id="setTemperature" typeId="airSetTemperature"/>
+		</channels>
+
+		<config-description-ref uri="thing-type:homematicip:hmip"/>
+	</thing-type>
+
+
+	<thing-type id="plugSwitch" listed="false">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="bridge"/>
+		</supported-bridge-type-refs>
+
+		<label>Pluggable switch</label>
+		<description>A plug which turns things on and off</description>
+		<channels>
+			<channel id="switch" typeId="outlet"/>
+		</channels>
+
+		<config-description-ref uri="thing-type:homematicip:hmip"/>
+	</thing-type>
+
+	<channel-type id="airSetTemperature">
+		<item-type>Number:Temperature</item-type>
+		<label>Air Set temperature</label>
+		<description>Target temperature for a thermostat</description>
+		<category>Number</category>
+		<state min="15" max="30" step="0.5" pattern="%.1f °C" readOnly="true"/>
+	</channel-type>
+
+	<channel-type id="airTemperature">
+		<item-type>Number:Temperature</item-type>
+		<label>Air temperature</label>
+		<description>Temperature of the air</description>
+		<category>Temperature</category>
+		<state readOnly="true"/>
+	</channel-type>
+
+	<channel-type id="airHumidity">
+		<item-type>Number:Dimensionless</item-type>
+		<label>Air Humidity</label>
+		<description>Humidity of the air</description>
+		<category>Humidity</category>
+		<state readOnly="true"/>
+	</channel-type>
+
+	<channel-type id="outlet">
+		<item-type>Switch</item-type>
+		<label>Outlet</label>
+		<description>Switched outlet (ON/OFF).</description>
+		<category>PowerOutlet</category>
+	</channel-type>
+</thing:thing-descriptions>
