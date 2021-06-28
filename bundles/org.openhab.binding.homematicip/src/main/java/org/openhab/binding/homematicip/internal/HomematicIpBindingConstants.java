@@ -30,16 +30,18 @@ public class HomematicIpBindingConstants {
 
     public static final String TYPE_ID_PLUG_SWITCH = "plugSwitch";
     public static final String TYPE_ID_THERMOSTAT = "thermostat";
+    public static final String TYPE_ID_WEATHER_REPORT = "weatherReport";
 
     public static final ThingTypeUID THING_TYPE_BRIDGE = new ThingTypeUID(BINDING_ID, "bridge");
-    public static final ThingTypeUID THING_TYPE_THERMOSTAT = new ThingTypeUID(BINDING_ID, "thermostat");
+    public static final ThingTypeUID THING_TYPE_THERMOSTAT = new ThingTypeUID(BINDING_ID, TYPE_ID_THERMOSTAT);
     public static final ThingTypeUID THING_TYPE_PLUG_SWITCH = new ThingTypeUID(BINDING_ID, TYPE_ID_PLUG_SWITCH);
+    public static final ThingTypeUID THING_TYPE_WEATHER_REPORT = new ThingTypeUID(BINDING_ID, TYPE_ID_WEATHER_REPORT);
 
     /**
      * All things (without bridge)
      */
     public static final Set<ThingTypeUID> SUPPORTED_THING_TYPE_UIDS = Set.of(THING_TYPE_THERMOSTAT,
-            THING_TYPE_PLUG_SWITCH);
+            THING_TYPE_PLUG_SWITCH, THING_TYPE_WEATHER_REPORT);
 
     public static final String CHANNEL_TEMPERATURE = "temperature";
     public static final String CHANNEL_HUMIDITY = "humidity";
@@ -50,4 +52,5 @@ public class HomematicIpBindingConstants {
     public static final String CHANNEL_TYPE_AIR_HUMIDITY = "airHumidity";
     public static final String CHANNEL_TYPE_AIR_TEMPERATURE = "airTemperature";
     public static final String CHANNEL_TYPE_SET_TEMPERATURE = "airSetTemperature";
+    public static final String CHANNEL_TYPE_WIND_SPEED = "windSpeed";
 }

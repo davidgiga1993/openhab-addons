@@ -12,12 +12,12 @@
  */
 package org.openhab.binding.homematicip.internal.handler;
 
-import static org.openhab.binding.homematicip.internal.HomematicIpBindingConstants.CHANNEL_SWITCH;
+import static org.openhab.binding.homematicip.internal.HomematicIpBindingConstants.CHANNEL_SET_TEMPERATURE;
 
 import java.io.IOException;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.core.library.types.OnOffType;
+import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
@@ -25,38 +25,37 @@ import org.openhab.core.thing.ThingStatusDetail;
 import org.openhab.core.types.Command;
 
 /**
- * The {@link PlugSwitchHandler} is responsible for handling commands, which are
+ * The {@link ThermostatHandler} is responsible for handling commands, which are
  * sent to one of the channels.
  *
  * @author David Schumann - Initial contribution
  */
 @NonNullByDefault
-public class PlugSwitchHandler extends HmipThingHandler {
-    public PlugSwitchHandler(Thing thing) {
+public class ThermostatHandler extends HmipThingHandler {
+    public ThermostatHandler(Thing thing) {
         super(thing);
     }
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        if (!CHANNEL_SWITCH.equals(channelUID.getId())) {
+        if (!CHANNEL_SET_TEMPERATURE.equals(channelUID.getId())) {
             // Unsupported channel
             return;
         }
-        if (command instanceof OnOffType) {
-            boolean state = command == OnOffType.ON;
+        if (command instanceof DecimalType) {
+            double temperature = ((DecimalType) command).doubleValue();
 
             HomematicIpBridgeHandler bridge = (HomematicIpBridgeHandler) getBridge().getHandler();
             try {
-                bridge.updateSwitch(getThing(), state);
+                bridge.updateTemperature(getThing(), temperature);
             } catch (IOException e) {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
                 return;
             }
 
-            updateState(CHANNEL_SWITCH, (OnOffType) command);
+            updateState(CHANNEL_SET_TEMPERATURE, (DecimalType) command);
             return;
         }
-
         super.handleCommand(channelUID, command);
     }
 }

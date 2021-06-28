@@ -5,10 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.openhab.binding.homematicip.internal.update.UnknownDeviceState;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 
-public class HmIpDevice {
+public class HmIpDevice implements HmIpValues {
     // Yes, there is a typ in that constant, the API returns it wrong..
     public static final String TYPE_PLUGGABLE_SWITCH = "PLUGABLE_SWITCH";
     public static final String TYPE_TEMPERATURE_HUMIDITY_SENSOR_DISPLAY = "TEMPERATURE_HUMIDITY_SENSOR_DISPLAY";
@@ -61,6 +63,19 @@ public class HmIpDevice {
     public int getRssiValue() {
         Channel meta = functionalChannels.get("0");
         return (int) meta.properties.getOrDefault("rssiDeviceValue", -1);
+    }
+
+    @Override
+    public Object getValue(int channelId, String key) throws UnknownDeviceState {
+        HmIpDevice.Channel channel = functionalChannels.get(String.valueOf(channelId));
+        if (channel == null) {
+            throw new UnknownDeviceState("Missing functional channel 1 of device " + label);
+        }
+        Object value = channel.properties.get(key);
+        if (value == null) {
+            throw new UnknownDeviceState("Unknown device state of device " + label + " " + key);
+        }
+        return value;
     }
 
     public static class Channel {

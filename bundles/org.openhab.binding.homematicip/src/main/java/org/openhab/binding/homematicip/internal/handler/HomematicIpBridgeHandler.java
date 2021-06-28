@@ -12,9 +12,12 @@
  */
 package org.openhab.binding.homematicip.internal.handler;
 
+import static org.openhab.binding.homematicip.internal.HomematicIpBindingConstants.TYPE_ID_WEATHER_REPORT;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -22,11 +25,12 @@ import org.eclipse.jetty.client.HttpClient;
 import org.openhab.binding.homematicip.internal.DiscoveryService;
 import org.openhab.binding.homematicip.internal.api.ApiException;
 import org.openhab.binding.homematicip.internal.api.HomematicIp;
-import org.openhab.binding.homematicip.internal.api.model.HmIpDevice;
+import org.openhab.binding.homematicip.internal.api.model.HmIpGroup;
+import org.openhab.binding.homematicip.internal.api.model.HmIpValues;
 import org.openhab.binding.homematicip.internal.api.model.HomeState;
 import org.openhab.binding.homematicip.internal.config.HomematicIpBridgeConfiguration;
-import org.openhab.binding.homematicip.internal.update.DeviceValueFetcher;
 import org.openhab.binding.homematicip.internal.update.UnknownDeviceState;
+import org.openhab.binding.homematicip.internal.update.ValueFetcher;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
@@ -89,21 +93,33 @@ public class HomematicIpBridgeHandler extends BaseBridgeHandler {
         pollingJob = scheduler.scheduleWithFixedDelay(this::pollData, 5, config.refreshInterval, TimeUnit.SECONDS);
     }
 
-    public void updateSwitch(Thing plugSwitchHandler, boolean state) throws IOException {
-        String hmipId = (String) plugSwitchHandler.getConfiguration().get(DiscoveryService.REPR_ID);
+    public void updateSwitch(Thing thing, boolean state) throws IOException {
+        String hmipId = (String) thing.getConfiguration().get(DiscoveryService.REPR_ID);
         // Channel index is always 1
         homematicIp.setSwitchState(hmipId, 1, state);
     }
 
+    public void updateTemperature(Thing thing, double temperature) throws IOException {
+        String hmipId = (String) thing.getConfiguration().get(DiscoveryService.REPR_ID);
+        // A thermostat set temperature is controlled by the room, not the device
+        // so let's find the room which belongs to the thermostat
+        Optional<HmIpGroup> group = state.findGroupOfDevice(HmIpGroup.TYPE_HEATING, hmipId);
+        if (group.isEmpty()) {
+            throw new IOException("No heating group for device found");
+        }
+
+        homematicIp.setTemperature(group.get().id, temperature);
+    }
+
     public void pollData() {
         // Simple caching
-        long delta = System.nanoTime() - lastUpdate;
-        if (delta >= TimeUnit.SECONDS.toNanos(config.refreshInterval)) {
+        long delta = System.currentTimeMillis() - lastUpdate;
+        if (delta >= TimeUnit.SECONDS.toNanos(config.refreshInterval) || delta < 0) {
             logger.info("Fetching new home state from server");
             try {
                 state = homematicIp.loadState();
                 updateStatus(ThingStatus.ONLINE);
-                lastUpdate = System.nanoTime();
+                lastUpdate = System.currentTimeMillis();
             } catch (IOException e) {
 
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
@@ -112,8 +128,9 @@ public class HomematicIpBridgeHandler extends BaseBridgeHandler {
         }
 
         for (Thing thing : getThing().getThings()) {
-            if (!thing.isEnabled())
+            if (!thing.isEnabled()) {
                 continue;
+            }
 
             String hmipId = (String) thing.getConfiguration().get(DiscoveryService.REPR_ID);
             if (hmipId == null) {
@@ -121,11 +138,18 @@ public class HomematicIpBridgeHandler extends BaseBridgeHandler {
                 continue;
             }
 
+            HmIpValues device;
+            if (TYPE_ID_WEATHER_REPORT.equals(hmipId)) {
+                // Use weather report instead of actual device
+                device = state.home.weather;
+            } else {
+                device = state.findDeviceById(hmipId);
+            }
+
             for (Channel channel : thing.getChannels()) {
                 if (!isLinked(channel.getUID())) {
                     continue;
                 }
-                HmIpDevice device = state.findDeviceById(hmipId);
                 HmipThingHandler handler = (HmipThingHandler) thing.getHandler();
                 if (handler == null) {
                     logger.error("Thing has no handler: " + thing.getUID());
@@ -145,7 +169,7 @@ public class HomematicIpBridgeHandler extends BaseBridgeHandler {
 
                 State type;
                 try {
-                    type = new DeviceValueFetcher(device, channel).convertToType();
+                    type = new ValueFetcher(device, channel).convertToType();
                 } catch (UnknownDeviceState unknownDeviceState) {
                     handler.unknownDeviceState(unknownDeviceState.getMessage());
                     continue;

@@ -13,6 +13,7 @@
 package org.openhab.binding.homematicip.internal;
 
 import static org.openhab.binding.homematicip.internal.HomematicIpBindingConstants.SUPPORTED_THING_TYPE_UIDS;
+import static org.openhab.binding.homematicip.internal.HomematicIpBindingConstants.TYPE_ID_WEATHER_REPORT;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -68,6 +69,20 @@ public class DiscoveryService extends AbstractDiscoveryService implements ThingH
         } catch (IOException e) {
             logger.error(e.getMessage());
             return;
+        }
+
+        if (state.home.weather != null) {
+            ThingTypeUID thingTypeUID = new ThingTypeUID(HomematicIpBindingConstants.BINDING_ID,
+                    TYPE_ID_WEATHER_REPORT);
+            ThingUID thingUID = new ThingUID(thingTypeUID, bridgeHandler.getThing().getUID(), TYPE_ID_WEATHER_REPORT);
+
+            Map<String, Object> properties = new HashMap<>();
+            properties.put(REPR_ID, TYPE_ID_WEATHER_REPORT);
+
+            DiscoveryResult result = DiscoveryResultBuilder.create(thingUID).withProperties(properties)
+                    .withRepresentationProperty(REPR_ID).withBridge(bridgeHandler.getThing().getUID())
+                    .withLabel("Weather report").build();
+            thingDiscovered(result);
         }
 
         List<HmIpDevice> switches = state.findDevicesByType(HmIpDevice.TYPE_PLUGGABLE_SWITCH);

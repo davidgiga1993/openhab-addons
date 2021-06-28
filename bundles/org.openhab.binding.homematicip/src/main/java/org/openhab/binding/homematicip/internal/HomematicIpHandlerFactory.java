@@ -16,6 +16,7 @@ import static org.openhab.binding.homematicip.internal.HomematicIpBindingConstan
 import static org.openhab.binding.homematicip.internal.HomematicIpBindingConstants.THING_TYPE_BRIDGE;
 import static org.openhab.binding.homematicip.internal.HomematicIpBindingConstants.THING_TYPE_PLUG_SWITCH;
 import static org.openhab.binding.homematicip.internal.HomematicIpBindingConstants.THING_TYPE_THERMOSTAT;
+import static org.openhab.binding.homematicip.internal.HomematicIpBindingConstants.THING_TYPE_WEATHER_REPORT;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,9 +25,9 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
-import org.openhab.binding.homematicip.internal.handler.AirHumidityHandler;
 import org.openhab.binding.homematicip.internal.handler.HomematicIpBridgeHandler;
 import org.openhab.binding.homematicip.internal.handler.PlugSwitchHandler;
+import org.openhab.binding.homematicip.internal.handler.ThermostatHandler;
 import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.Thing;
@@ -72,10 +73,13 @@ public class HomematicIpHandlerFactory extends BaseThingHandlerFactory {
         }
 
         if (THING_TYPE_THERMOSTAT.equals(thingTypeUID)) {
-            return new AirHumidityHandler(thing);
+            return new ThermostatHandler(thing);
         }
         if (THING_TYPE_PLUG_SWITCH.equals(thingTypeUID)) {
             return new PlugSwitchHandler(thing);
+        }
+        if (THING_TYPE_WEATHER_REPORT.equals(thingTypeUID)) {
+            return new ThermostatHandler(thing);
         }
 
         return null;

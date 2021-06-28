@@ -59,6 +59,23 @@
 		<config-description-ref uri="thing-type:homematicip:hmip"/>
 	</thing-type>
 
+
+	<thing-type id="weatherReport" listed="false">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="bridge"/>
+		</supported-bridge-type-refs>
+
+		<label>Weather report</label>
+		<description>Current weather report</description>
+		<channels>
+			<channel id="temperature" typeId="airTemperature"/>
+			<channel id="humidity" typeId="airHumidity"/>
+			<channel id="windSpeed" typeId="windSpeed"/>
+		</channels>
+
+		<config-description-ref uri="thing-type:homematicip:hmip"/>
+	</thing-type>
+
 	<channel-type id="airSetTemperature">
 		<item-type>Number:Temperature</item-type>
 		<label>Air Set temperature</label>
@@ -80,6 +97,14 @@
 		<label>Air Humidity</label>
 		<description>Humidity of the air</description>
 		<category>Humidity</category>
+		<state readOnly="true"/>
+	</channel-type>
+
+	<channel-type id="windSpeed">
+		<item-type>Number:Speed</item-type>
+		<label>Wind Speed</label>
+		<description>Current wind speec</description>
+		<category>Wind</category>
 		<state readOnly="true"/>
 	</channel-type>
 

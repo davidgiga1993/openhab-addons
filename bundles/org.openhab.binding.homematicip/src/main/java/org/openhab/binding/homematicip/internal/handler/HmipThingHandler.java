@@ -5,6 +5,7 @@ import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
+import org.openhab.core.thing.ThingStatusInfo;
 import org.openhab.core.thing.binding.BaseThingHandler;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.RefreshType;
@@ -21,6 +22,17 @@ public abstract class HmipThingHandler extends BaseThingHandler {
      */
     public HmipThingHandler(Thing thing) {
         super(thing);
+    }
+
+    @Override
+    public void bridgeStatusChanged(ThingStatusInfo bridgeStatusInfo) {
+        super.bridgeStatusChanged(bridgeStatusInfo);
+        logger.info("Bridge status changed: " + bridgeStatusInfo.getStatus());
+        if (bridgeStatusInfo.getStatus() == ThingStatus.ONLINE) {
+            // Refresh data
+            HomematicIpBridgeHandler bridgeHandler = (HomematicIpBridgeHandler) getBridge().getHandler();
+            bridgeHandler.pollData();
+        }
     }
 
     @Override
